@@ -1,9 +1,17 @@
 ---
 name: contract-review
 description: AI合同智能审查助手。上传或粘贴合同文本，自动进行9维雷达评分、风险热力图可视化、条款对比修改建议、法律依据引用、谈判策略生成，输出交互式HTML审查报告。覆盖买卖合同/劳动用工/租赁合同/服务合同/保密协议/投资协议/建设工程/技术开发8类合同类型。触发词：合同审查, 审合同, 合同风险, 合同分析, 审查合同, contract review, 帮我看看合同, 合同审核, 法律风险分析。
+version: "1.0.0"
 agent_created: true
 location: user
 allowed-tools: [Read, Write, Edit, Bash, WebSearch, WebFetch, Grep, Glob]
+metadata:
+  openclaw:
+    requires:
+      bins:
+        - python.exe
+    emoji: "📋"
+    homepage: https://github.com/bettermen/contract-review
 ---
 
 # 合同审查 (Contract Review)
