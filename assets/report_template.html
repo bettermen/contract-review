@@ -52,6 +52,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 .stat-card .stat-label { font-size: 13px; color: var(--text-secondary); }
 .stat-card .stat-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 
+/* Summary card */
+.summary-card { background: linear-gradient(135deg, #eff6ff, #e0e7ff); border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid #c7d2fe; }
+.summary-card .summary-text { font-size: 15px; line-height: 1.8; color: var(--text); }
+.summary-card .summary-label { font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+
+/* Key Info grid */
+.key-info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.key-info-item { background: #f8fafc; border-radius: 8px; padding: 12px 16px; border: 1px solid var(--border); }
+.key-info-item .ki-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; }
+.key-info-item .ki-value { font-size: 14px; font-weight: 500; color: var(--text); word-break: break-all; }
+
 /* Radar */
 #radarChart { max-height: 360px; }
 
@@ -95,6 +106,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 .risk-item .risk-title { font-weight: 600; font-size: 15px; }
 .risk-item .risk-desc { font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; }
 .risk-item .law-ref { font-size: 12px; color: var(--accent); margin-top: 6px; font-style: italic; }
+.risk-item .risk-dimension { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: rgba(59,130,246,0.1); color: var(--accent); margin-left: auto; }
 
 /* Clause comparison */
 .comparison { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
@@ -116,14 +128,38 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 .strategy-list li .priority-should { background: #fffbeb; color: var(--warning); }
 .strategy-list li .priority-could { background: #ecfdf5; color: var(--success); }
 
+/* Timeline */
+.timeline { position: relative; padding-left: 24px; }
+.timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+.timeline-item { position: relative; padding-bottom: 20px; }
+.timeline-item::before { content: ''; position: absolute; left: -20px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid white; box-shadow: 0 0 0 2px var(--accent); }
+.timeline-item .tl-date { font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; }
+.timeline-item .tl-title { font-size: 14px; font-weight: 600; }
+.timeline-item .tl-desc { font-size: 13px; color: var(--text-secondary); }
+
+/* Clause tree */
+.clause-tree { max-height: 400px; overflow-y: auto; }
+.clause-node { padding: 8px 12px; border-radius: 6px; margin-bottom: 4px; background: #f8fafc; cursor: pointer; transition: background 0.2s; }
+.clause-node:hover { background: var(--accent-light); }
+.clause-node .cn-num { font-weight: 700; color: var(--accent); margin-right: 8px; }
+.clause-node .cn-title { font-size: 14px; }
+
 /* Footer */
 .footer { text-align: center; padding: 24px; font-size: 12px; color: var(--text-secondary); border-top: 1px solid var(--border); margin-top: 24px; }
 .disclaimer { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 14px 18px; font-size: 13px; color: #92400e; margin-bottom: 24px; }
+
+/* Tabs */
+.tab-bar { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 2px solid var(--border); }
+.tab-btn { padding: 10px 20px; font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
 
 /* Responsive */
 @media (max-width: 768px) {
   .grid { grid-template-columns: 1fr; }
   .overview-grid { grid-template-columns: repeat(2, 1fr); }
+  .key-info-grid { grid-template-columns: 1fr; }
   .comparison-body { grid-template-columns: 1fr; }
   .header { padding: 24px; }
 }
@@ -148,8 +184,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
     ⚠️ <strong>免责声明：</strong>本报告由AI辅助生成，仅供参考，不构成法律意见。重大合同建议由专业律师最终审核。法律条文引用可能不完整，重要决策请核实最新法律法规。
   </div>
 
+  <!-- Contract Summary -->
+  <div class="summary-card" id="summaryCard">
+    <div class="summary-label">📝 合同摘要</div>
+    <div class="summary-text" id="summaryText"></div>
+  </div>
+
   <!-- Overview Stats -->
   <div class="overview-grid" id="overviewStats"></div>
+
+  <!-- Key Info Extraction -->
+  <div class="card full-width" style="margin-bottom:20px;">
+    <h2><span class="icon">🔑</span> 关键信息提取</h2>
+    <div class="key-info-grid" id="keyInfoGrid"></div>
+  </div>
 
   <!-- Radar + Score Table -->
   <div class="grid">
@@ -160,7 +208,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
     <div class="card">
       <h2><span class="icon">📊</span> 分维度评分明细</h2>
       <table class="score-table" id="scoreDetailTable">
-        <thead><tr><th>维度</th><th>得分</th><th>评级</th></tr></thead>
+        <thead><tr><th>维度</th><th>得分</th><th>评级</th><th>权重</th></tr></thead>
         <tbody id="scoreDetailBody"></tbody>
       </table>
     </div>
@@ -196,21 +244,35 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
     <div id="comparisonContainer"></div>
   </div>
 
-  <!-- Negotiation Strategy -->
-  <div class="card full-width" style="margin-bottom:20px;" id="strategySection">
-    <h2><span class="icon">🎯</span> 谈判策略建议</h2>
-    <div id="strategyContainer"></div>
-  </div>
+  <!-- Tabs: Timeline / Clause Tree / Strategy / Law -->
+  <div class="card full-width" style="margin-bottom:20px;">
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('timeline')">📅 关键时间线</button>
+      <button class="tab-btn" onclick="switchTab('clauses')">📄 条款结构</button>
+      <button class="tab-btn" onclick="switchTab('strategy')">🎯 谈判策略</button>
+      <button class="tab-btn" onclick="switchTab('law')">⚖️ 法律依据</button>
+    </div>
 
-  <!-- Law References -->
-  <div class="card full-width" style="margin-bottom:20px;" id="lawSection">
-    <h2><span class="icon">⚖️</span> 引用法律依据</h2>
-    <div id="lawContainer"></div>
+    <div class="tab-content active" id="tab-timeline">
+      <div class="timeline" id="timelineContainer"></div>
+    </div>
+
+    <div class="tab-content" id="tab-clauses">
+      <div class="clause-tree" id="clauseTreeContainer"></div>
+    </div>
+
+    <div class="tab-content" id="tab-strategy">
+      <div id="strategyContainer"></div>
+    </div>
+
+    <div class="tab-content" id="tab-law">
+      <div id="lawContainer"></div>
+    </div>
   </div>
 
   <!-- Footer -->
   <div class="footer">
-    Powered by WorkBuddy Contract Review Skill | 报告生成时间：<span id="reportTime"></span> | AI辅助审查，仅供参考
+    Powered by WorkBuddy Contract Review Skill v2.0 | 报告生成时间：<span id="reportTime"></span> | AI辅助审查，仅供参考
   </div>
 </div>
 
@@ -224,6 +286,9 @@ const NEGOTIATION_STRATEGY = {{NEGOTIATION_STRATEGY}};
 const SCORE_CARD = {{SCORE_CARD}};
 const LAW_REFERENCES = {{LAW_REFERENCES}};
 const HEATMAP_DATA = {{HEATMAP_DATA}};
+const KEY_INFO = {{KEY_INFO}};
+const TIMELINE_DATA = {{TIMELINE_DATA}};
+const CLAUSE_TREE = {{CLAUSE_TREE}};
 
 // ===== RENDER FUNCTIONS =====
 
@@ -235,6 +300,13 @@ const grade = SCORE_CARD.overall_grade || 'B';
 const gradeColors = { 'A+':'#10b981','A':'#10b981','B+':'#3b82f6','B':'#3b82f6','C+':'#f59e0b','C':'#f59e0b','D':'#ef4444','F':'#ef4444' };
 document.getElementById('overallGrade').textContent = grade;
 document.getElementById('overallGrade').style.background = gradeColors[grade] || '#64748b';
+
+// Summary
+if (KEY_INFO && KEY_INFO.summary) {
+  document.getElementById('summaryText').textContent = KEY_INFO.summary;
+} else {
+  document.getElementById('summaryCard').style.display = 'none';
+}
 
 // Overview Stats
 const stats = [
@@ -250,6 +322,40 @@ const statsHtml = stats.map(s => `
     <div class="stat-sub">${s.sub}</div>
   </div>`).join('');
 document.getElementById('overviewStats').innerHTML = statsHtml;
+
+// Key Info Grid
+if (KEY_INFO) {
+  const kiItems = [];
+  if (KEY_INFO.contract_name) kiItems.push({label: '合同名称', value: KEY_INFO.contract_name});
+  (KEY_INFO.parties || []).forEach(p => {
+    kiItems.push({label: p.role, value: p.name + (p.credit_code ? ' (' + p.credit_code + ')' : '')});
+  });
+  (KEY_INFO.amounts || []).slice(0, 3).forEach(a => {
+    kiItems.push({label: a.type, value: a.value});
+  });
+  (KEY_INFO.dates || []).slice(0, 4).forEach(d => {
+    kiItems.push({label: d.type, value: d.value});
+  });
+  const dispute = KEY_INFO.dispute_resolution || {};
+  if (dispute.method) {
+    kiItems.push({label: '争议解决', value: dispute.method + (dispute.jurisdiction ? ' - ' + dispute.jurisdiction : dispute.arbitration ? ' - ' + dispute.arbitration : '')});
+  }
+  if (KEY_INFO.confidentiality && KEY_INFO.confidentiality.has_confidentiality) {
+    kiItems.push({label: '保密条款', value: '有' + (KEY_INFO.confidentiality.confidentiality_period ? ' (' + KEY_INFO.confidentiality.confidentiality_period + ')' : '')});
+  }
+  if (KEY_INFO.stats) {
+    kiItems.push({label: '条款总数', value: KEY_INFO.stats.clause_count + '条'});
+  }
+
+  document.getElementById('keyInfoGrid').innerHTML = kiItems.map(ki => `
+    <div class="key-info-item">
+      <div class="ki-label">${ki.label}</div>
+      <div class="ki-value">${ki.value}</div>
+    </div>
+  `).join('');
+} else {
+  document.getElementById('keyInfoGrid').parentElement.parentElement.style.display = 'none';
+}
 
 // Radar Chart
 const radarCtx = document.getElementById('radarChart').getContext('2d');
@@ -287,6 +393,7 @@ new Chart(radarCtx, {
 });
 
 // Score Table
+const weights = [15, 15, 12, 10, 15, 10, 10, 8, 5];
 const scoreRows = (RADAR_DATA.labels || ['主体资格','条款完整','违约责任','争议解决','法律合规','权利对等','履约可行','知识产权','格式规范']).map((label, i) => {
   const score = (RADAR_DATA.scores || [])[i] || 60;
   const barColor = score >= 80 ? '#10b981' : score >= 60 ? '#3b82f6' : score >= 40 ? '#f59e0b' : '#ef4444';
@@ -295,22 +402,14 @@ const scoreRows = (RADAR_DATA.labels || ['主体资格','条款完整','违约�
     <td>${label}</td>
     <td><div class="score-bar" style="width:${score}%;background:${barColor}">${score}分</div></td>
     <td><span class="score-grade" style="color:${barColor}">${gradeLetter}</span></td>
+    <td style="color:var(--text-secondary);font-size:13px;">${weights[i]}%</td>
   </tr>`;
 }).join('');
 document.getElementById('scoreDetailBody').innerHTML = scoreRows;
 
 // Heatmap
 const sections = HEATMAP_DATA.sections || ['主体条款','标的条款','价款条款','交付条款','违约责任','争议解决','保密条款','其他条款'];
-const heatData = HEATMAP_DATA.data || [
-  {critical:1, major:0, minor:1, none:3},
-  {critical:0, major:1, minor:2, none:2},
-  {critical:0, major:0, minor:1, none:4},
-  {critical:0, major:2, minor:1, none:2},
-  {critical:2, major:1, minor:0, none:2},
-  {critical:1, major:0, minor:1, none:3},
-  {critical:0, major:1, minor:0, none:4},
-  {critical:0, major:0, minor:3, none:2}
-];
+const heatData = HEATMAP_DATA.data || [];
 const heatmapHtml = sections.map((sec, i) => {
   const d = heatData[i] || {critical:0, major:0, minor:0, none:5};
   const total = d.critical + d.major + d.minor + d.none || 1;
@@ -344,6 +443,7 @@ function renderRiskItems(filter) {
       <div class="risk-header">
         <span class="risk-badge">${levelNames[r.level] || r.level}</span>
         <span class="risk-title">${r.title || '未命名风险'}</span>
+        ${r.dimension ? '<span class="risk-dimension">' + r.dimension + '</span>' : ''}
       </div>
       <div class="risk-desc">${r.description || ''}</div>
       ${r.original ? '<div style="font-size:13px;margin:6px 0;padding:8px;background:rgba(0,0,0,0.03);border-radius:6px;"><strong>📌 原文：</strong>' + r.original + '</div>' : ''}
@@ -395,6 +495,33 @@ if (compItems.length > 0) {
   document.getElementById('comparisonSection').style.display = 'none';
 }
 
+// Timeline
+const timelineItems = TIMELINE_DATA || [];
+if (timelineItems.length > 0) {
+  document.getElementById('timelineContainer').innerHTML = timelineItems.map(t => `
+    <div class="timeline-item">
+      <div class="tl-date">${t.date || ''}</div>
+      <div class="tl-title">${t.title || ''}</div>
+      <div class="tl-desc">${t.description || ''}</div>
+    </div>
+  `).join('');
+} else {
+  document.getElementById('timelineContainer').innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">未提取到关键时间节点</p>';
+}
+
+// Clause Tree
+const clauses = CLAUSE_TREE || [];
+if (clauses.length > 0) {
+  document.getElementById('clauseTreeContainer').innerHTML = clauses.map(c => `
+    <div class="clause-node">
+      <span class="cn-num">第${c.number}条</span>
+      <span class="cn-title">${c.title || ''}</span>
+    </div>
+  `).join('');
+} else {
+  document.getElementById('clauseTreeContainer').innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">未解析到条款结构</p>';
+}
+
 // Negotiation Strategy
 const strategy = NEGOTIATION_STRATEGY || {};
 if (strategy.items && strategy.items.length > 0) {
@@ -410,7 +537,7 @@ if (strategy.items && strategy.items.length > 0) {
   `).join('') + '</ul>';
   document.getElementById('strategyContainer').innerHTML = stratHtml;
 } else {
-  document.getElementById('strategySection').style.display = 'none';
+  document.getElementById('strategyContainer').innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">暂无谈判策略建议</p>';
 }
 
 // Law References
@@ -425,7 +552,15 @@ if (laws.length > 0) {
   `).join('');
   document.getElementById('lawContainer').innerHTML = lawHtml;
 } else {
-  document.getElementById('lawSection').style.display = 'none';
+  document.getElementById('lawContainer').innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">暂无法律依据引用</p>';
+}
+
+// Tab switching
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + tabName).classList.add('active');
 }
 
 // Footer time
